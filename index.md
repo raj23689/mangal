@@ -1,37 +1,178 @@
-## Welcome to GitHub Pages
+## About
 
-You can use the [editor on GitHub](https://github.com/metafates/mangal/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+✨ __Mangal__ is a fancy CLI app written in Go which scrapes, downloads and packs manga into pdfs
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+⚙️ The most important feature of Mangal is that it supports user defined scrapers
+that can be added with just a few lines of config file (see [config](#config) & [limitations](#limitations))
 
-### Markdown
+🦎 Works in both modes - TUI & Inline. Use it as a standalone app or integrate with scripts
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
-```markdown
-Syntax highlighted code block
+🍿 This app is inspired by __awesome__ [ani-cli](https://github.com/pystardust/ani-cli). Check it out!
 
-# Header 1
-## Header 2
-### Header 3
+## Examples
 
-- Bulleted
-- List
+### TUI usage example
 
-1. Numbered
-2. List
+https://user-images.githubusercontent.com/62389790/172178993-bb40392a-54ba-446d-b0ed-1b962ede7ed2.mp4
 
-**Bold** and _Italic_ and `Code` text
+### Inline mode usage example
 
-[Link](url) and ![Image](src)
+> For more information about inline mode type `mangal inline --help`
+
+```bash
+# Search manga. Returns a list of found manga
+mangal inline --query "death note"
+
+# Search manga. Returns a JSON list of found manga
+mangal inline --query "death note" --json
+
+# Get chapters of first manga in the list
+mangal inline --query "death note" --manga 1
+
+# Download first chapter of the first manga in the list
+mangal inline --query "death note" --manga 1 --chapter 1
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+## Config
 
-### Jekyll Themes
+> TLDR: Use `mangal config where` to show where config should be located
+> and `mangal config init` to create default config
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/metafates/mangal/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+Config is located at the OS default config directory.
 
-### Support or Contact
+- __Unix__ - `$XDG_CONFIG_HOME/mangal/config.toml` if `$XDG_CONFIG_HOME` exists, else `$HOME/.config/mangal/config.toml`
+- __Darwin__ (macOS) - `$HOME/Library/Application\ Support/mangal/config.toml`
+- __Windows__ - `%AppData%\mangal\config.toml`
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+You can load config from custom path by using `--config` flag
+
+`mangal --config /user/configs/config.toml`
+
+By default, Mangal uses [manganelo](https://ww5.manganelo.tv) as a source
+
+```toml
+# Which sources to use. You can use several sources, it won't affect perfomance'
+use = ['manganelo']
+
+# If false, then OS default pdf reader will be used
+use_custom_pdf_reader = false
+custom_pdf_reader = "zathura"
+
+# Custom download path, can be either relative (to the pwd) or absolute
+download_path = '.'
+
+# Fullscreen mode
+fullscreen = true
+
+# Input prompt icon
+prompt = "🔍"
+
+# Input placeholder
+placeholder = "What shall we look for?"
+
+# Selected chapter mark
+mark = "▼"
+
+# Search window title
+title = "Mangal"
+
+[sources]
+    [sources.manganelo]
+    # Base url
+    base = 'https://ww5.manganelo.tv'
+
+    # Search endpoint. Put %s where the query should be
+    search = 'https://ww5.manganelo.tv/search/%s'
+
+    # Selector of entry anchor (<a></a>) on search page
+    manga_anchor = '.search-story-item a.item-title'
+
+    # Selector of entry title on search page
+    manga_title = '.search-story-item a.item-title'
+
+    # Manga chapters anchors selector
+    chapter_anchor = 'li.a-h a.chapter-name'
+
+    # Manga chapters titles selector
+    chapter_title = 'li.a-h a.chapter-name'
+
+    # Reader page images selector
+    reader_page = '.container-chapter-reader img'
+    
+    # Random delay between requests
+    random_delay_ms = 500 # ms
+    
+    # Are chapters listed in reversed order on that source?
+    # reversed order -> from newest chapter to oldest
+    reversed_chapters_order = true
+```
+
+## Commands
+
+```
+Usage:
+  mangal [flags]
+  mangal [command]
+
+Available Commands:
+  cleanup     Remove cached and temp files
+  completion  Generate the autocompletion script for the specified shell
+  config      Config manipulation
+  help        Help about any command
+  inline      Search & Download manga in inline mode
+  version     Show version
+
+Flags:
+  -c, --config string   use config from path
+  -h, --help            help for mangal
+
+Use "mangal [command] --help" for more information about a command.```
+```
+
+## Install
+
+### Homebrew
+
+```bash
+brew tap metafates/tap
+brew install metafates/tap/mangal
+```
+
+### Go
+```bash
+go install github.com/metafates/mangal@latest
+```
+
+## Build
+
+```bash
+git clone https://github.com/metafates/mangal.git
+cd mangal
+go build
+```
+
+## Limitations
+
+Even though many manga sites will work,
+there exists some (serious) limitations to which sites could be added
+
+- Navigation layout should follow this model
+    - Each manga have a separate page
+    - Manga page should have a some form of chapters list (not lazy loaded)
+    - Each chapter should have a separate reader page with all images
+
+
+Some sites that work well
+
+- https://manganato.com
+- https://ww3.mangakakalot.tv
+- https://ww5.manganelo.tv
+
+
+I'm planning to make a more advanced scraper creation system
+to overcome this roadblocks somewhere in the future
+
+---
+
+Manga icon taken from [here](https://www.flaticon.com/free-icons/manga)
